@@ -11,8 +11,9 @@ Keybinds can be edited, but the defaults are:
 # 3D
 
 - <kbd>W</kbd> / <kbd>A</kbd> / <kbd>S</kbd> / <kbd>D</kbd> - Move along the horizontal plane
-- <kbd>Space</kbd> - Move upward
-- <kbd>L Shift</kbd> - Move downward
+- <kbd>Q</kbd> - Move upward
+- <kbd>E</kbd> - Move downward
+- Left Click + Mouse Move - Change the camera orientation / look around
 
 ```rust
 use bevy::prelude::*;
@@ -20,8 +21,8 @@ use bevy_fly_camera::{FlyCamera, FlyCameraPlugin};
 
 fn setup(commands: &mut Commands) {
   commands
-    .spawn(Camera3dBundle::default())
-    .with(FlyCamera::default());
+    .spawn(PerspectiveCameraBundle::default())
+    .insert(FlyCamera::default());
 }
 
 fn main() {
@@ -46,7 +47,7 @@ use bevy_fly_camera::{FlyCamera2d, FlyCameraPlugin};
 fn setup(commands: &mut Commands) {
   commands
     .spawn(Camera2dBundle::default())
-    .with(FlyCamera2d::default());
+    .insert(FlyCamera2d::default());
 }
 
 fn main() {
@@ -82,3 +83,4 @@ Any PRs are also welcome, though keep in mind that the project scope is intentio
 | `0.4.0`      | `0.6.0`                   |
 | `0.5.0`      | `0.7.0`                   |
 | `0.6.0`      | `0.8.0`                   |
+| `0.6.0`      | `0.9.0`                   |

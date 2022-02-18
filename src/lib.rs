@@ -6,8 +6,9 @@
 //!
 //! Default keybinds are:
 //! - <kbd>W</kbd> / <kbd>A</kbd> / <kbd>S</kbd> / <kbd>D</kbd> - Move along the horizontal plane
-//! - Shift - Move downward
-//! - Space - Move upward
+//! - Q - Move upward
+//! - E - Move downward
+//! - Left Click + Mouse Move - Change the camera orientation / look around
 //!
 //! ## Example
 //! ```no_compile
@@ -16,14 +17,14 @@
 //!
 //! fn setup(commands: &mut Commands) {
 //!	  commands
-//!     .spawn(Camera3dBundle::default())
-//!     .with(FlyCamera::default());
+//!     .spawn(PerspectiveCameraBundle::default())
+//!     .insert(FlyCamera::default());
 //! }
 //!
 //! fn main() {
 //!	  App::build()
 //!     .add_plugins(DefaultPlugins)
-//!     .add_startup_system(setup.system())
+//!     .add_startup_system(setup)
 //!     .add_plugin(FlyCameraPlugin)
 //!     .run();
 //! }
@@ -45,7 +46,7 @@
 //! ```no_compile
 //!	commands
 //!   .spawn(Camera2dBundle::default())
-//!   .with(FlyCamera2d::default());
+//!   .insert(FlyCamera2d::default());
 //! ```
 //!
 //! There's also a basic piece of example code included in `/examples/2d.rs`
@@ -60,13 +61,13 @@ mod util;
 pub use cam2d::FlyCamera2d;
 
 /// A set of options for initializing a FlyCamera.
-/// Attach this component to a [`Camera3dBundle`](https://docs.rs/bevy/0.4.0/bevy/prelude/struct.Camera3dBundle.html) bundle to control it with your mouse and keyboard.
+/// Attach this component to a [`PerspectiveCameraBundle`](https://docs.rs/bevy/latest/bevy/prelude/struct.PerspectiveCameraBundle.html) bundle to control it with your mouse and keyboard.
 /// # Example
 /// ```no_compile
 /// fn setup(mut commands: Commands) {
 ///	  commands
-///     .spawn(Camera3dBundle::default())
-///     .with(FlyCamera::default());
+///     .spawn(PerspectiveCameraBundle::default())
+///     .insert(FlyCamera::default());
 /// }
 
 #[derive(Component)]
@@ -105,7 +106,7 @@ impl Default for FlyCamera {
 		Self {
 			accel: 1.5,
 			max_speed: 0.5,
-			sensitivity: 3.0,
+			sensitivity: 10.0,
 			friction: 1.0,
 			pitch: 0.0,
 			yaw: 0.0,
@@ -114,8 +115,8 @@ impl Default for FlyCamera {
 			key_backward: KeyCode::S,
 			key_left: KeyCode::A,
 			key_right: KeyCode::D,
-			key_up: KeyCode::Space,
-			key_down: KeyCode::LShift,
+			key_up: KeyCode::Q,
+			key_down: KeyCode::E,
 			enabled: true,
 		}
 	}
@@ -198,6 +199,7 @@ fn camera_movement_system(
 fn mouse_motion_system(
 	time: Res<Time>,
 	mut mouse_motion_event_reader: EventReader<MouseMotion>,
+	mouse_button: Res<Input<MouseButton>>,
 	mut query: Query<(&mut FlyCamera, &mut Transform)>,
 ) {
 	let mut delta: Vec2 = Vec2::ZERO;
@@ -208,21 +210,23 @@ fn mouse_motion_system(
 		return;
 	}
 
-	for (mut options, mut transform) in query.iter_mut() {
-		if !options.enabled {
-			continue;
+	if mouse_button.pressed(MouseButton::Left) {
+		for (mut options, mut transform) in query.iter_mut() {
+			if !options.enabled {
+				continue;
+			}
+			options.yaw -= delta.x * options.sensitivity * time.delta_seconds();
+			options.pitch += delta.y * options.sensitivity * time.delta_seconds();
+
+			options.pitch = options.pitch.clamp(-89.0, 89.9);
+			// println!("pitch: {}, yaw: {}", options.pitch, options.yaw);
+
+			let yaw_radians = options.yaw.to_radians();
+			let pitch_radians = options.pitch.to_radians();
+
+			transform.rotation = Quat::from_axis_angle(Vec3::Y, yaw_radians)
+				* Quat::from_axis_angle(-Vec3::X, pitch_radians);
 		}
-		options.yaw -= delta.x * options.sensitivity * time.delta_seconds();
-		options.pitch += delta.y * options.sensitivity * time.delta_seconds();
-
-		options.pitch = options.pitch.clamp(-89.0, 89.9);
-		// println!("pitch: {}, yaw: {}", options.pitch, options.yaw);
-
-		let yaw_radians = options.yaw.to_radians();
-		let pitch_radians = options.pitch.to_radians();
-
-		transform.rotation = Quat::from_axis_angle(Vec3::Y, yaw_radians)
-			* Quat::from_axis_angle(-Vec3::X, pitch_radians);
 	}
 }
 
