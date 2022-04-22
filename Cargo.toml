@@ -1,6 +1,6 @@
 [package]
 name = "bevy_fly_camera"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["aunyks", "mcpar-land"]
 edition = "2021"
 description = "A basic flying camera in Bevy"
@@ -9,4 +9,4 @@ repository = "https://github.com/aunyks/bevy_fly_camera"
 readme = "README.md"
 
 [dependencies]
-bevy = { version = "0.6.0" }
+bevy = { version = "0.7.0" }
