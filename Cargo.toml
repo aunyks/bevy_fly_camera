@@ -9,4 +9,4 @@ repository = "https://github.com/aunyks/bevy_fly_camera"
 readme = "README.md"
 
 [dependencies]
-bevy = { version = "0.7.0" }
+bevy = { version = "^0.8.1" }
